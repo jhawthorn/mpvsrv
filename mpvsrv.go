@@ -3,12 +3,33 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
+	"os/exec"
 
 	"github.com/DexterLB/mpvipc"
 )
 
+func NewPlayer() {
+	cmd := exec.Command("mpv", "--input-ipc-server=/tmp/mpv_socket", "--idle", "--force-window")
+	err := cmd.Start()
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Waiting for command to finish...")
+	err = cmd.Wait()
+	log.Printf("Command finished with error: %v", err)
+}
+
+func waitForSocket() {
+	// FIXME: this should sleep less and check for the socket to be created
+	time.Sleep(time.Second)
+}
+
 func main() {
-	conn := mpvipc.NewConnection("/tmp/mpv_rpc")
+	go NewPlayer()
+	waitForSocket()
+
+	conn := mpvipc.NewConnection("/tmp/mpv_socket")
 	err := conn.Open()
 	if err != nil {
 		log.Fatal(err)
@@ -19,7 +40,7 @@ func main() {
 
 	path, err := conn.Get("path")
 	if err != nil {
-		log.Fatal(err)
+		// log.Fatal(err)
 	}
 	log.Printf("current file playing: %s", path)
 

@@ -67,6 +67,11 @@ func getPlayerStatusJSON(conn *mpvipc.Connection) string {
 	return string(jsonString)
 }
 
+func statusResponse(w http.ResponseWriter, conn *mpvipc.Connection) {
+	w.Header().Set("Content-Type", "application/json")
+	io.WriteString(w, getPlayerStatusJSON(conn))
+}
+
 func RunServer() {
 	conn := mpvipc.NewConnection(socketPath)
 
@@ -85,9 +90,31 @@ func RunServer() {
 	defer conn.Close()
 
 	http.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		io.WriteString(w, getPlayerStatusJSON(conn))
+		statusResponse(w, conn)
 	})
+
+	http.HandleFunc("/pause", func(w http.ResponseWriter, r *http.Request) {
+		if err = conn.Set("pause", true); err != nil {
+			log.Print(err)
+		}
+		statusResponse(w, conn)
+	})
+
+	http.HandleFunc("/unpause", func(w http.ResponseWriter, r *http.Request) {
+		if err = conn.Set("pause", false); err != nil {
+			log.Print(err)
+		}
+		statusResponse(w, conn)
+	})
+
+	http.HandleFunc("/toggle", func(w http.ResponseWriter, r *http.Request) {
+		paused, _ := conn.Get("pause")
+		if err = conn.Set("pause", !paused.(bool)); err != nil {
+			log.Print(err)
+		}
+		statusResponse(w, conn)
+	})
+
 
 	log.Print("Server running on http://localhost:8080 ")
 	log.Fatal(http.ListenAndServe(":8080", nil))

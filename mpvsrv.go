@@ -1,15 +1,16 @@
 package main
 
 import (
-	"fmt"
+	"io"
 	"log"
-	"time"
+	"net/http"
 	"os/exec"
+	"time"
 
 	"github.com/DexterLB/mpvipc"
 )
 
-func NewPlayer() {
+func RunPlayer() {
 	cmd := exec.Command("mpv", "--input-ipc-server=/tmp/mpv_socket", "--idle", "--force-window")
 	err := cmd.Start()
 	if err != nil {
@@ -25,8 +26,11 @@ func waitForSocket() {
 	time.Sleep(time.Second)
 }
 
-func main() {
-	go NewPlayer()
+func getPlayerStatusJSON(conn *mpvipc.Connection) string {
+	return "{}"
+}
+
+func RunServer() {
 	waitForSocket()
 
 	conn := mpvipc.NewConnection("/tmp/mpv_socket")
@@ -36,37 +40,14 @@ func main() {
 	}
 	defer conn.Close()
 
-	events, stopListening := conn.NewEventListener()
+	http.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
+		io.WriteString(w, getPlayerStatusJSON(conn))
+	})
 
-	path, err := conn.Get("path")
-	if err != nil {
-		// log.Fatal(err)
-	}
-	log.Printf("current file playing: %s", path)
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}
 
-	err = conn.Set("pause", true)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("paused!")
-
-	_, err = conn.Call("observe_property", 42, "volume")
-	if err != nil {
-		fmt.Print(err)
-	}
-
-	go func() {
-		conn.WaitUntilClosed()
-		stopListening <- struct{}{}
-	}()
-
-	for event := range events {
-		if event.ID == 42 {
-			log.Printf("volume now is %f", event.Data.(float64))
-		} else {
-			log.Printf("received event: %s", event.Name)
-		}
-	}
-
-	log.Printf("mpv closed socket")
+func main() {
+	go RunServer()
+	RunPlayer()
 }

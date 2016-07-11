@@ -25,34 +25,52 @@ func RunPlayer() {
 }
 
 type StatusResponse struct {
+	Idle   bool   `json:"idle"`
 	Paused bool   `json:"paused"`
 	Path   string `json:"path"`
 	Title  string `json:"title"`
-}
-
-func waitForSocket() {
-	// FIXME: this should sleep less and check for the socket to be created
-	time.Sleep(time.Second)
+	Time   struct {
+		Current   float64 `json:"current"`
+		Remaining float64 `json:"remaining"`
+		Total     float64 `json:"total"`
+	} `json:"time"`
 }
 
 func getPlayerStatusJSON(conn *mpvipc.Connection) string {
-	response := &StatusResponse{
-		Paused: false,
-		Path:   "/foo/bar",
-		Title:  "Foobar",
+	var r StatusResponse
+	idle, _ := conn.Get("idle")
+	r.Idle = idle.(bool)
+
+	if !r.Idle {
+		paused, _ := conn.Get("pause")
+		r.Paused = paused.(bool)
+
+		path, _ := conn.Get("path")
+		r.Path = path.(string)
+
+		title, _ := conn.Get("media-title")
+		r.Title = title.(string)
 	}
-	json, _ := json.MarshalIndent(response, "", "  ")
-	return string(json)
+
+	jsonString, _ := json.MarshalIndent(r, "", "  ")
+	return string(jsonString)
 }
 
 func RunServer() {
-	waitForSocket()
-
 	conn := mpvipc.NewConnection(socketPath)
-	err := conn.Open()
+
+	var err error
+	for i := 0; i < 1000; i++ {
+		err = conn.Open()
+		if err == nil {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer conn.Close()
 
 	http.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
@@ -60,6 +78,7 @@ func RunServer() {
 		io.WriteString(w, getPlayerStatusJSON(conn))
 	})
 
+	log.Print("Server running on http://localhost:8080 ")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 

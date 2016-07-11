@@ -33,6 +33,7 @@ type StatusResponse struct {
 		Current   float64 `json:"current"`
 		Remaining float64 `json:"remaining"`
 		Total     float64 `json:"total"`
+		Percent   float64 `json:"percent"`
 	} `json:"time"`
 }
 
@@ -50,6 +51,16 @@ func getPlayerStatusJSON(conn *mpvipc.Connection) string {
 
 		title, _ := conn.Get("media-title")
 		r.Title = title.(string)
+
+		timePos, _ := conn.Get("time-pos")
+		r.Time.Current = timePos.(float64)
+
+		timeRemaining, _ := conn.Get("time-remaining")
+		r.Time.Remaining = timeRemaining.(float64)
+		r.Time.Total = r.Time.Current + r.Time.Remaining
+
+		percent, _ := conn.Get("percent-pos")
+		r.Time.Percent = percent.(float64)
 	}
 
 	jsonString, _ := json.MarshalIndent(r, "", "  ")

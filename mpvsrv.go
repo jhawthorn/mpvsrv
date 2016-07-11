@@ -11,8 +11,10 @@ import (
 	"github.com/DexterLB/mpvipc"
 )
 
+const socketPath = "/tmp/mpv_socket"
+
 func RunPlayer() {
-	cmd := exec.Command("mpv", "--input-ipc-server=/tmp/mpv_socket", "--idle", "--force-window")
+	cmd := exec.Command("mpv", "--input-ipc-server", socketPath, "--idle", "--force-window")
 	err := cmd.Start()
 	if err != nil {
 		log.Fatal(err)
@@ -46,7 +48,7 @@ func getPlayerStatusJSON(conn *mpvipc.Connection) string {
 func RunServer() {
 	waitForSocket()
 
-	conn := mpvipc.NewConnection("/tmp/mpv_socket")
+	conn := mpvipc.NewConnection(socketPath)
 	err := conn.Open()
 	if err != nil {
 		log.Fatal(err)

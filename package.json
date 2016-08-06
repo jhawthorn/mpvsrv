@@ -8,6 +8,8 @@
   "dependencies": {
     "babel-loader": "^6.2.4",
     "babel-preset-es2015-webpack": "^6.4.2",
+    "css-loader": "^0.23.1",
+    "style-loader": "^0.13.1",
     "webpack": "^2.1.0-beta.20"
   }
 }

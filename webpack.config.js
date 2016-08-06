@@ -14,6 +14,12 @@ module.exports = function(options) {
     filename: "bundle.js"
   }
 
+  config.plugins = [
+    new webpack.ProvidePlugin({
+      'fetch': 'imports?this=>global!exports?global.fetch!whatwg-fetch'
+    })
+  ];
+
   config.module = {
     loaders: [
       {

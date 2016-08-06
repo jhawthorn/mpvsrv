@@ -135,6 +135,12 @@ func RunServer(basepath string) {
 			c.JSON(http.StatusOK, getPlayerStatus(conn))
 		}
 	})
+	r.POST("/stop", func(c *gin.Context) {
+		if _, err = conn.Call("stop"); err != nil {
+			log.Print(err)
+		}
+		c.JSON(http.StatusOK, getPlayerStatus(conn))
+	})
 	r.POST("/pause", func(c *gin.Context) {
 		if err = conn.Set("pause", true); err != nil {
 			log.Print(err)

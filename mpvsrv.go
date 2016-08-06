@@ -1,20 +1,20 @@
 package main
 
 import (
-	"encoding/json"
-	"io"
 	"log"
 	"net/http"
 	"os/exec"
 	"time"
 
+	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/contrib/static"
 	"github.com/DexterLB/mpvipc"
 )
 
 const socketPath = "/tmp/mpv_socket"
 
 func RunPlayer() {
-	cmd := exec.Command("mpv", "--input-ipc-server", socketPath, "--idle", "--force-window")
+	cmd := exec.Command("mpv", "--input-ipc-server", socketPath, "--idle", "--force-window", "/home/jhawthorn/test.mkv")
 	err := cmd.Start()
 	if err != nil {
 		log.Fatal(err)
@@ -37,7 +37,7 @@ type StatusResponse struct {
 	} `json:"time"`
 }
 
-func getPlayerStatusJSON(conn *mpvipc.Connection) string {
+func getPlayerStatus(conn *mpvipc.Connection) StatusResponse {
 	var r StatusResponse
 	idle, _ := conn.Get("idle")
 	r.Idle = idle.(bool)
@@ -63,13 +63,7 @@ func getPlayerStatusJSON(conn *mpvipc.Connection) string {
 		r.Time.Percent = percent.(float64)
 	}
 
-	jsonString, _ := json.MarshalIndent(r, "", "  ")
-	return string(jsonString)
-}
-
-func statusResponse(w http.ResponseWriter, conn *mpvipc.Connection) {
-	w.Header().Set("Content-Type", "application/json")
-	io.WriteString(w, getPlayerStatusJSON(conn))
+	return r
 }
 
 func RunServer() {
@@ -89,35 +83,34 @@ func RunServer() {
 
 	defer conn.Close()
 
-	http.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
-		statusResponse(w, conn)
+	r := gin.Default()
+	r.Use(static.Serve("/", static.LocalFile("static", true)))
+	r.GET("/status", func(c *gin.Context) {
+		c.JSON(http.StatusOK, getPlayerStatus(conn))
 	})
-
-	http.HandleFunc("/pause", func(w http.ResponseWriter, r *http.Request) {
+	r.POST("/pause", func(c *gin.Context) {
 		if err = conn.Set("pause", true); err != nil {
 			log.Print(err)
 		}
-		statusResponse(w, conn)
+		c.JSON(http.StatusOK, getPlayerStatus(conn))
 	})
-
-	http.HandleFunc("/unpause", func(w http.ResponseWriter, r *http.Request) {
+	r.POST("/unpause", func(c *gin.Context) {
 		if err = conn.Set("pause", false); err != nil {
 			log.Print(err)
 		}
-		statusResponse(w, conn)
+		c.JSON(http.StatusOK, getPlayerStatus(conn))
 	})
-
-	http.HandleFunc("/toggle", func(w http.ResponseWriter, r *http.Request) {
+	r.POST("/toggle", func(c *gin.Context) {
 		paused, _ := conn.Get("pause")
 		if err = conn.Set("pause", !paused.(bool)); err != nil {
 			log.Print(err)
 		}
-		statusResponse(w, conn)
+		c.JSON(http.StatusOK, getPlayerStatus(conn))
 	})
 
 
 	log.Print("Server running on http://localhost:8080 ")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	r.Run(":8080")
 }
 
 func main() {

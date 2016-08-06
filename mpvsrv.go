@@ -88,10 +88,6 @@ func dirList(f http.File) []gin.H {
 	return results
 }
 
-type PlayRequest struct {
-    Path     string `form:"path" json:"path" binding:"required"`
-}
-
 func RunServer(basepath string) {
 	conn := mpvipc.NewConnection(socketPath)
 	dir := http.Dir(basepath)
@@ -125,7 +121,10 @@ func RunServer(basepath string) {
 		c.JSON(http.StatusOK, getPlayerStatus(conn))
 	})
 	r.POST("/play", func(c *gin.Context) {
-		var json PlayRequest
+		var json struct {
+			Path     string `form:"path" json:"path" binding:"required"`
+		}
+
 		if c.Bind(&json) == nil {
 			fullpath := path.Join(basepath, path.Clean(json.Path))
 			log.Print(fullpath)

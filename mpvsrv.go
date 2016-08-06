@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"flag"
 	"os"
+	"path"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/contrib/static"
@@ -87,6 +88,10 @@ func dirList(f http.File) []gin.H {
 	return results
 }
 
+type PlayRequest struct {
+    Path     string `form:"path" json:"path" binding:"required"`
+}
+
 func RunServer(basepath string) {
 	conn := mpvipc.NewConnection(socketPath)
 	dir := http.Dir(basepath)
@@ -118,6 +123,17 @@ func RunServer(basepath string) {
 	})
 	r.GET("/status", func(c *gin.Context) {
 		c.JSON(http.StatusOK, getPlayerStatus(conn))
+	})
+	r.POST("/play", func(c *gin.Context) {
+		var json PlayRequest
+		if c.Bind(&json) == nil {
+			fullpath := path.Join(basepath, path.Clean(json.Path))
+			log.Print(fullpath)
+			if _, err = conn.Call("loadfile", fullpath, "replace"); err != nil {
+				log.Print(err)
+			}
+			c.JSON(http.StatusOK, getPlayerStatus(conn))
+		}
 	})
 	r.POST("/pause", func(c *gin.Context) {
 		if err = conn.Set("pause", true); err != nil {

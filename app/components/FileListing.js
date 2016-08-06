@@ -22,13 +22,24 @@ class FileListing extends Component {
       }))
   }
 
+  playPath(path) {
+    fetch('/play', {
+      method: 'POST',
+      headers:  {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({path: path})
+    })
+  }
+
   open(e) {
     const path = this.state.path
     const fullpath = path == "/" ? e.name : path + "/" + e.name
     if (e.is_dir) {
       this.visitPath(fullpath)
     } else {
-      alert({play: fullpath})
+      this.playPath(fullpath)
     }
   }
 

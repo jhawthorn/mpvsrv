@@ -6,6 +6,6 @@ import { h, render } from 'preact'
 const player = document.getElementById("player");
 
 render(
-    <Player pollInterval={200} />,
-    player
-    );
+  <Player rootUrl="/" pollInterval={200} />,
+  player
+);

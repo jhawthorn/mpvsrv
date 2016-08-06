@@ -66,8 +66,27 @@ func getPlayerStatus(conn *mpvipc.Connection) StatusResponse {
 	return r
 }
 
-func RunServer() {
+func dirList(f http.File) []gin.H {
+	dirs, err := f.Readdir(-1)
+	if err != nil {
+		log.Print(err)
+	}
+	results := make([]gin.H, len(dirs))
+	for i, d := range dirs {
+		results[i] = gin.H{
+			"name": d.Name(),
+			"size": d.Size(),
+			"mode": d.Mode(),
+			"modtime": d.ModTime(),
+			"is_dir": d.IsDir(),
+		}
+	}
+	return results
+}
+
+func RunServer(basepath string) {
 	conn := mpvipc.NewConnection(socketPath)
+	dir := http.Dir(basepath)
 
 	var err error
 	for i := 0; i < 1000; i++ {
@@ -85,6 +104,15 @@ func RunServer() {
 
 	r := gin.Default()
 	r.Use(static.Serve("/", static.LocalFile("static", true)))
+	r.GET("/browse/*path", func(c *gin.Context) {
+		path := c.Param("path")
+		file, err := dir.Open(path)
+		if err != nil {
+			log.Print(err)
+		}
+
+		c.JSON(200, dirList(file))
+	})
 	r.GET("/status", func(c *gin.Context) {
 		c.JSON(http.StatusOK, getPlayerStatus(conn))
 	})
@@ -114,6 +142,6 @@ func RunServer() {
 }
 
 func main() {
-	go RunServer()
+	go RunServer("/storage/video")
 	RunPlayer()
 }

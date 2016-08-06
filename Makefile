@@ -5,7 +5,7 @@ all:
 	go build
 
 run: all
-	./mpvsrv
+	./mpvsrv $(DIR)
 
 watch:
 	$(WEBPACK) --watch

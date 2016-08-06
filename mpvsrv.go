@@ -5,6 +5,9 @@ import (
 	"net/http"
 	"os/exec"
 	"time"
+	"fmt"
+	"flag"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/contrib/static"
@@ -141,7 +144,20 @@ func RunServer(basepath string) {
 	r.Run(":8080")
 }
 
+func usage() {
+	fmt.Fprintf(os.Stderr, "usage: mpvsrv DIR\n")
+	flag.PrintDefaults()
+	os.Exit(2)
+}
+
 func main() {
-	go RunServer("/storage/video")
+	flag.Usage = usage
+	flag.Parse()
+
+	args := flag.Args()
+	if len(args) !=  1 {
+		usage()
+	}
+	go RunServer(args[0])
 	RunPlayer()
 }

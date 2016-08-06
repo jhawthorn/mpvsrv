@@ -23,8 +23,8 @@ module.exports = function(options) {
       },
 
       {
-        test: /\.css$/,
-        loader: "style!css"
+        test: /\.scss$/,
+        loader: "style!css!postcss!sass"
       }
     ]
   }

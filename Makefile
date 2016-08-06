@@ -6,3 +6,6 @@ all:
 
 run: all
 	./mpvsrv
+
+watch:
+	$(WEBPACK) --watch

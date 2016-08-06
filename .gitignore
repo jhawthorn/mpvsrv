@@ -2,3 +2,4 @@ mpvsrv
 node_modules
 static/bundle.js
 npm-debug.log
+bindata.go

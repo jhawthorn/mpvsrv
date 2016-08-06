@@ -11,8 +11,8 @@ import (
 	"path"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/contrib/static"
 	"github.com/DexterLB/mpvipc"
+	"github.com/elazarl/go-bindata-assetfs"
 )
 
 const socketPath = "/tmp/mpv_socket"
@@ -88,6 +88,19 @@ func dirList(f http.File) []gin.H {
 	return results
 }
 
+func ServeStatic() gin.HandlerFunc {
+	filesystem := &assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, AssetInfo: AssetInfo, Prefix: "static"}
+	fileserver := http.FileServer(filesystem)
+	return func(c *gin.Context) {
+		path := c.Request.URL.Path
+		_, err := filesystem.Open(path)
+		if err == nil {
+			fileserver.ServeHTTP(c.Writer, c.Request)
+			c.Abort()
+		}
+	}
+}
+
 func RunServer(basepath string) {
 	conn := mpvipc.NewConnection(socketPath)
 	dir := http.Dir(basepath)
@@ -107,7 +120,7 @@ func RunServer(basepath string) {
 	defer conn.Close()
 
 	r := gin.Default()
-	r.Use(static.Serve("/", static.LocalFile("static", true)))
+	r.Use(ServeStatic())
 	r.GET("/browse/*path", func(c *gin.Context) {
 		path := c.Param("path")
 		file, err := dir.Open(path)

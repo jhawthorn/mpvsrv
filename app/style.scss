@@ -1,3 +1,25 @@
 body {
   background: yellow;
 }
+
+.player-title {
+  font-size: 4em;
+  font-weight: bold;
+}
+
+.player-actions {
+  .player-action {
+    width: 25%;
+    height: 10em;
+  }
+}
+
+.progress-bar {
+  height: 2em;
+  background-color: lightgrey;
+
+  .progress-bar-fill{
+    height: 100%;
+    background-color: black;
+  }
+}

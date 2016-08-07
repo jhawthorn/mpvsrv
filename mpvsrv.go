@@ -149,7 +149,7 @@ func RunServer(basepath string) {
 	})
 	r.POST("/seek", func(c *gin.Context) {
 	    var data struct {
-		Seconds string `form:"seconds" json:"seconds" binding:"required"`
+		Seconds float64 `form:"seconds" json:"seconds" binding:"required"`
 	    }
 	    if c.Bind(&data) == nil {
 		if _, err = conn.Call("seek", data.Seconds, "absolute"); err != nil {

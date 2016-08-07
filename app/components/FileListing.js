@@ -58,11 +58,11 @@ class FileListing extends Component {
       <pre>
         <h2>{this.state.path}</h2>
         <div>
-          <a onClick={this.openParent.bind(this)} href="#">..</a>
+          <a onClick={::this.openParent} href="#">..</a>
         </div>
         <div>
           {this.state.entries.map((e) => {
-            return <div><a onClick={this.open.bind(this, e)} href="#">{e.name}</a></div>
+            return <div><a onClick={() => this.open(e)} href="#">{e.name}</a></div>
           })}
         </div>
       </pre>

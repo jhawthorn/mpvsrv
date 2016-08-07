@@ -39,7 +39,7 @@ class Progress extends Component {
         <div
           ref={(c) => this.progressBar = c}
           class="progress-bar"
-          onClick={this.clickHandler.bind(this)}>
+          onClick={::this.clickHandler}>
           <div class="progress-bar-fill" style={`width: ${this.percent()}%`}></div>
         </div>
       </div>
@@ -98,12 +98,12 @@ class Player extends Component {
       <div class="player">
         <div class="player-title">{state.title}</div>
         <div class="player-progress">
-          <Progress current={time.current} total={time.total} onSeek={this.seekHandler.bind(this)} />
+          <Progress current={time.current} total={time.total} onSeek={::this.seekHandler} />
         </div>
         <div class="player-actions">
           <button class="player-action action-prev" disabled >Prev</button>
-          <button class="player-action action-playpause" disabled={state.idle} onClick={this.toggle.bind(this)}>{this.state.paused ? "⏵ Play" : "⏸ Pause" }</button>
-          <button class="player-action action-stop" disabled={state.idle} onClick={this.stop.bind(this)}>⏹ Stop</button>
+          <button class="player-action action-playpause" disabled={state.idle} onClick={::this.toggle}>{this.state.paused ? "⏵ Play" : "⏸ Pause" }</button>
+          <button class="player-action action-stop" disabled={state.idle} onClick={::this.stop}>⏹ Stop</button>
           <button class="player-action action-next" disabled >Next</button>
         </div>
       </div>

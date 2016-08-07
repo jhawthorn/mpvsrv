@@ -1,5 +1,6 @@
 body {
   background: yellow;
+  color: #333;
 }
 
 .player-title {
@@ -11,6 +12,13 @@ body {
   .player-action {
     width: 25%;
     height: 10em;
+  }
+}
+
+.progress-time {
+  text-align: center;
+  .time-of {
+    margin: 0 5px
   }
 }
 

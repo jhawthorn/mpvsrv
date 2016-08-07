@@ -1,6 +1,6 @@
 import "./style.scss";
-import Player from "./components/Player"
-import FileListing from "./components/FileListing"
+import Player from "components/Player"
+import FileListing from "components/FileListing"
 
 import { h, render } from 'preact'
 

@@ -3,10 +3,10 @@ module.exports = function(options) {
   var webpack = require('webpack');
   var config = {};
 
-  config.context = __dirname;
+  config.context = path.join(__dirname, 'app');
 
   config.entry = {
-    default: './app/entry.js'
+    default: './entry.js'
   };
 
   config.output = {
@@ -36,7 +36,7 @@ module.exports = function(options) {
   }
 
   config.resolve = {
-    root: path.resolve(__dirname, "./app")
+    modules: [path.resolve(__dirname, "app"), "node_modules"]
   };
 
   return config;

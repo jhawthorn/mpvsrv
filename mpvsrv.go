@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"net/url"
 	"os/exec"
 	"time"
 	"fmt"
@@ -139,7 +140,14 @@ func RunServer(basepath string) {
 		}
 
 		if c.Bind(&json) == nil {
-			fullpath := path.Join(basepath, path.Clean(json.Path))
+			var fullpath string
+			log.Print(json.Path)
+			if _, err = url.ParseRequestURI(json.Path); err == nil {
+				fullpath = json.Path
+			} else {
+				log.Print(err)
+				fullpath = path.Join(basepath, path.Clean(json.Path))
+			}
 			log.Print(fullpath)
 			if _, err = conn.Call("loadfile", fullpath, "replace"); err != nil {
 				log.Print(err)

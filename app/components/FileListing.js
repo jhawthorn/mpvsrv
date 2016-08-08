@@ -16,10 +16,13 @@ class FileListing extends Component {
   visitPath(path) {
     fetch('/browse/'+path)
       .then((response) => response.json())
-      .then((json) => this.setState({
-        path: path,
-        entries: json
-      }))
+      .then((json) => {
+        const entries = json.sort((a,b) => a.name > b.name ? 1 : -1)
+        this.setState({
+          path: path,
+          entries: json
+        })
+      })
   }
 
   playPath(path) {

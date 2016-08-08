@@ -20,26 +20,41 @@ function formatTime(t) {
 
 class Progress extends Component {
   percent() {
-    return this.props.current * 100 / this.props.total;
+    return this.current() * 100 / this.props.total;
+  }
+
+  current() {
+    return this.state.preview ? this.state.preview : this.props.current
   }
 
   clickHandler(e) {
-    const value = e.offsetX / this.progressBar.offsetWidth;
-    this.props.onSeek(this.props.total * value)
+    const value = this.props.total * e.offsetX / this.progressBar.offsetWidth;
+    this.props.onSeek(value)
+  }
+
+  mouseMoveHandler(e) {
+    const value = this.props.total * e.offsetX / this.progressBar.offsetWidth;
+    this.setState({preview: value})
+  }
+
+  mouseLeaveHandler(e) {
+    this.setState({preview: null})
   }
 
   render() {
     return (
       <div class="progress">
         <div class="progress-time">
-          <span class="time-current">{formatTime(this.props.current)}</span>
+          <span class="time-current">{formatTime(this.current())}</span>
           <span class="time-of">/</span>
           <span class="time-total">{formatTime(this.props.total)}</span>
         </div>
         <div
           ref={(c) => this.progressBar = c}
           class="progress-bar"
-          onClick={::this.clickHandler}>
+          onClick={::this.clickHandler}
+          onMouseMove={::this.mouseMoveHandler}
+          onMouseLeave={::this.mouseLeaveHandler}>
           <div class="progress-bar-fill" style={`width: ${this.percent()}%`}></div>
         </div>
       </div>

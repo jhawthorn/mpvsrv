@@ -1,3 +1,4 @@
+import { subscribe, toggle, stop, getStatus, seekAbsolute } from 'mpv'
 import { h, Component } from 'preact'
 
 function pad2(n) {
@@ -65,25 +66,17 @@ class Progress extends Component {
 class Player extends Component {
   componentDidMount() {
     this.timer = setInterval(() => {
-      this.updateStatusFromServer();
+      getStatus()
     }, this.props.pollInterval);
-    this.updateStatusFromServer();
+    getStatus()
+
+    subscribe((state) => {
+      this.setState(state)
+    })
   }
 
   componentWillUnmount() {
     clearInterval(this.timer);
-  }
-
-  updateStatusFromServer() {
-    this.fetch('/status')
-  }
-
-  toggle() {
-    this.fetch('/toggle', { method: 'POST' })
-  }
-
-  stop() {
-    this.fetch('/stop', { method: 'POST' })
   }
 
   fetch() {
@@ -99,16 +92,7 @@ class Player extends Component {
   }
 
   seekHandler(seconds) {
-    this.fetch('/seek', {
-      method: 'POST',
-      headers:  {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        seconds: seconds
-      })
-    })
+    seekAbsolute(seconds)
   }
 
   render() {
@@ -122,8 +106,8 @@ class Player extends Component {
         </div>
         <div class="player-actions">
           <button class="player-action action-prev" disabled >Prev</button>
-          <button class="player-action action-playpause" disabled={state.idle} onClick={::this.toggle}>{this.state.paused ? "⏵ Play" : "⏸ Pause" }</button>
-          <button class="player-action action-stop" disabled={state.idle} onClick={::this.stop}>⏹ Stop</button>
+          <button class="player-action action-playpause" disabled={state.idle} onClick={toggle}>{this.state.paused ? "⏵ Play" : "⏸ Pause" }</button>
+          <button class="player-action action-stop" disabled={state.idle} onClick={stop}>⏹ Stop</button>
           <button class="player-action action-next" disabled >Next</button>
         </div>
       </div>

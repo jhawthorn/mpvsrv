@@ -6,7 +6,7 @@ all:
 	go build
 
 release:
-	$(WEBPACK)
+	$(WEBPACK) --optimize-minimize --optimize-dedupe
 	go-bindata static/...
 	go build
 

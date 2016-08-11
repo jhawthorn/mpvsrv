@@ -87,8 +87,13 @@ class Player extends Component {
   }
 
   fetch() {
-    fetch.apply(null, arguments)
-      .then((response) => response.json())
+    this.handleResponse(
+      fetch.apply(null, arguments).then((response) => response.json())
+    )
+  }
+
+  handleResponse(dfd) {
+    dfd
       .then((json) => this.setState(json))
       .catch((ex) => console.log('parsing failed', ex))
   }

@@ -155,12 +155,23 @@ func RunServer(basepath string) {
 			c.JSON(http.StatusOK, getPlayerStatus(conn))
 		}
 	})
-	r.POST("/seek", func(c *gin.Context) {
+	r.POST("/seekAbsolute", func(c *gin.Context) {
 	    var data struct {
 		Seconds float64 `form:"seconds" json:"seconds" binding:"required"`
 	    }
 	    if c.Bind(&data) == nil {
 		if _, err = conn.Call("seek", data.Seconds, "absolute"); err != nil {
+		    log.Print(err)
+		}
+		c.JSON(http.StatusOK, getPlayerStatus(conn))
+	    }
+	})
+	r.POST("/seekRelative", func(c *gin.Context) {
+	    var data struct {
+		Seconds float64 `form:"seconds" json:"seconds" binding:"required"`
+	    }
+	    if c.Bind(&data) == nil {
+		if _, err = conn.Call("seek", data.Seconds, "relative"); err != nil {
 		    log.Print(err)
 		}
 		c.JSON(http.StatusOK, getPlayerStatus(conn))

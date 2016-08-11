@@ -34,7 +34,20 @@ export function toggle() {
 }
 
 export function seekAbsolute(seconds) {
-  return request('/seek', {
+  return request('/seekAbsolute', {
+    method: 'POST',
+    headers:  {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      seconds: seconds
+    })
+  })
+}
+
+export function seekRelative(seconds) {
+  return request('/seekRelative', {
     method: 'POST',
     headers:  {
       'Accept': 'application/json',
